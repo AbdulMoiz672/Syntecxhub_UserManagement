@@ -1,0 +1,29 @@
+{
+  "name": "user-management-api",
+  "version": "1.0.0",
+  "description": "User Management RESTful API with Express.js, MongoDB, and Mongoose",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "express",
+    "mongodb",
+    "mongoose",
+    "api",
+    "basic-auth",
+    "user-management"
+  ],
+  "author": "Copilot",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.7.1",
+    "mongoose": "^8.4.4",
+    "nodemailer": "^10.0.16",
+    "qrcode": "^1.5.4"
+  }
+}

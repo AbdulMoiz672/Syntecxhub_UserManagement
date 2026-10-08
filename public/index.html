@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management Console</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <section id="auth-screen" class="screen active">
+        <div class="auth-shell">
+          <div class="auth-panel">
+            <div class="brand">
+              <div class="brand-mark">UM</div>
+              <div>
+                <span class="eyebrow">Operator access</span>
+                <h1>User Management</h1>
+              </div>
+            </div>
+
+            <p class="subtitle">Securely manage user records with full CRUD access.</p>
+
+            <form id="auth-form" class="auth-form">
+              <label>
+                Username
+                <input type="text" id="username" name="username" autocomplete="username" placeholder="Enter username" required />
+              </label>
+
+              <label>
+                Password
+                <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Enter password" required />
+              </label>
+
+              <button type="submit" class="primary-btn">Sign in</button>
+            </form>
+
+            <button id="show-reset-btn" type="button" class="text-btn">Forgot password?</button>
+
+            <form id="mfa-login-form" class="auth-form" hidden>
+              <label>
+                Authenticator code
+                <input type="text" id="login-totp-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit code" required />
+              </label>
+              <button type="submit" class="primary-btn">Verify and sign in</button>
+              <button id="back-to-login-btn" type="button" class="text-btn">Back to sign in</button>
+            </form>
+
+            <form id="reset-request-form" class="auth-form" hidden>
+              <label>
+                Administrator email
+                <input type="email" id="reset-email" autocomplete="email" placeholder="you@example.com" required />
+              </label>
+              <button type="submit" class="primary-btn">Send reset link</button>
+              <button id="cancel-reset-request-btn" type="button" class="text-btn">Back to sign in</button>
+            </form>
+
+            <form id="reset-confirm-form" class="auth-form" hidden>
+              <label>
+                New password
+                <input type="password" id="reset-new-password" autocomplete="new-password" minlength="12" maxlength="128" placeholder="At least 12 characters" required />
+              </label>
+              <button type="submit" class="primary-btn">Update password</button>
+              <button id="cancel-reset-confirm-btn" type="button" class="text-btn">Back to sign in</button>
+            </form>
+
+            <p id="auth-message" class="message" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="main-screen" class="screen">
+        <div class="app-shell">
+          <aside class="sidebar">
+            <div class="brand sidebar-brand">
+              <div class="brand-mark">UM</div>
+              <div>
+                <span class="eyebrow">Admin</span>
+                <strong>Console</strong>
+              </div>
+            </div>
+
+            <nav class="nav">
+              <button class="nav-link active" type="button">Users</button>
+            </nav>
+          </aside>
+
+          <main class="main-panel">
+            <header class="topbar">
+              <div>
+                <p class="eyebrow">Operations</p>
+                <h2>User Directory</h2>
+              </div>
+
+              <div class="topbar-actions">
+                <button id="refresh-btn" type="button" class="secondary-btn">Refresh</button>
+                <button id="security-btn" type="button" class="secondary-btn">Account security</button>
+                <button id="signout-btn" type="button" class="ghost-btn">Sign out</button>
+              </div>
+            </header>
+
+            <div class="summary-grid">
+              <article class="summary-card accent-blue">
+                <span>Matching Users</span>
+                <strong id="total-users">0</strong>
+              </article>
+              <article class="summary-card accent-green">
+                <span>With Phone (current page)</span>
+                <strong id="phone-users">0</strong>
+              </article>
+              <article class="summary-card accent-purple">
+                <span>Latest Update (current page)</span>
+                <strong id="last-updated">—</strong>
+              </article>
+            </div>
+
+            <div id="status-message" class="message" aria-live="polite"></div>
+
+            <section id="security-panel" class="content-panel" hidden>
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Account protection</p>
+                  <h3 id="security-heading" tabindex="-1">Security settings</h3>
+                </div>
+                <button id="close-security-btn" type="button" class="secondary-btn">Back to users</button>
+              </div>
+              <p id="mfa-status" class="message" aria-live="polite" tabindex="-1"></p>
+              <button id="mfa-setup-btn" type="button" class="primary-btn">Set up authenticator app</button>
+              <div id="mfa-enrollment" class="mfa-enrollment" hidden>
+                <p>Scan this QR code with your authenticator app, or enter the setup key manually.</p>
+                <img id="mfa-qr-code" alt="Authenticator app setup QR code" />
+                <p>Manual setup key: <code id="mfa-manual-key"></code></p>
+                <form id="mfa-verify-form" class="auth-form">
+                  <label>
+                    Six-digit authenticator code
+                    <input type="text" id="mfa-setup-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required />
+                  </label>
+                  <button type="submit" class="primary-btn">Verify and enable MFA</button>
+                </form>
+              </div>
+              <form id="mfa-disable-form" class="auth-form" hidden>
+                <label>
+                  Authenticator code to disable MFA
+                  <input type="text" id="mfa-disable-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required />
+                </label>
+                <button type="submit" class="ghost-btn">Disable MFA</button>
+              </form>
+            </section>
+
+            <section class="content-panel">
+              <div class="section-header">
+                <h3 id="directory-heading" tabindex="-1">Records</h3>
+                <div class="section-actions">
+                  <button id="audit-btn" type="button" class="secondary-btn">Audit history</button>
+                  <button id="add-user-btn" type="button" class="primary-btn">Add User</button>
+                </div>
+              </div>
+
+              <div class="directory-controls">
+                <label class="search-control">
+                  Search users
+                  <input id="search-input" type="search" placeholder="Search by name or email" />
+                </label>
+                <label>
+                  Phone
+                  <select id="phone-filter">
+                    <option value="">All users</option>
+                    <option value="true">Has phone</option>
+                    <option value="false">No phone</option>
+                  </select>
+                </label>
+                <label>
+                  Sort by
+                  <select id="sort-field">
+                    <option value="createdAt">Created date</option>
+                    <option value="updatedAt">Updated date</option>
+                    <option value="name">Name</option>
+                    <option value="email">Email</option>
+                  </select>
+                </label>
+                <label>
+                  Direction
+                  <select id="sort-order">
+                    <option value="desc">Descending</option>
+                    <option value="asc">Ascending</option>
+                  </select>
+                </label>
+              </div>
+
+              <div id="list-container"></div>
+              <div class="pagination">
+                <span id="page-summary" aria-live="polite"></span>
+                <div>
+                  <button id="previous-page-btn" type="button" class="secondary-btn">Previous</button>
+                  <button id="next-page-btn" type="button" class="secondary-btn">Next</button>
+                </div>
+              </div>
+            </section>
+
+            <section id="audit-panel" class="content-panel audit-panel" hidden>
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Accountability</p>
+                  <h3 id="audit-heading" tabindex="-1">Audit history</h3>
+                </div>
+                <button id="close-audit-btn" type="button" class="secondary-btn">Back to users</button>
+              </div>
+              <div id="audit-container"></div>
+              <div class="pagination">
+                <span id="audit-page-summary" aria-live="polite"></span>
+                <div>
+                  <button id="audit-previous-btn" type="button" class="secondary-btn">Previous</button>
+                  <button id="audit-next-btn" type="button" class="secondary-btn">Next</button>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+      </section>
+
+      <section id="modal-screen" class="screen modal-screen hidden">
+        <div class="modal-card card">
+          <div id="modal-header"></div>
+          <div id="modal-body"></div>
+        </div>
+      </section>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
